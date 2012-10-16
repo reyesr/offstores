@@ -87,7 +87,6 @@
         }
     };
 
-
     offstores.stores.WebSQLManager = function(config) {
         if (!(this instanceof offstores.stores.WebSQLManager)) {
             return new offstores.stores.WebSQLManager(config);

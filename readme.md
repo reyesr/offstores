@@ -28,8 +28,3 @@ Include the offstores minified js file in your web page, then create and offstor
 
 ##Customize the backend lookup
 
-When
-
-## High-level API
-
-T
