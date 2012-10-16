@@ -31,7 +31,7 @@ var offstores = (function (offstores) {
     }
 
     offstores.Manager = function (config) {
-        this.managers = (config.managers && config.managers.length > 0) ? config.managers : [offstores.IDBManager];
+        this.managers = (config.managers && config.managers.length > 0) ? config.managers : [offstores.stores.IDBManager, offstores.stores.WebSQLManager, offstores.stores.LocalStorageManager, offstores.stores.MemoryManager];
         this.config = config;
         this.metaStoreName = "offstoremeta";
     };
