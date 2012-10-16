@@ -1,35 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ed136e73-c167-42ba-ac66-fcf4164ea4d9" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/rodrigo.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/grunt.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/license.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/readme.md" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/localstorage_mgr.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/storemgr.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/common.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/libs/jquery-1.8.2.min.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/libs/qunit-1.10.0.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/libs/qunit-1.10.0.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/storemanager.html" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/test-storemanager.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/test-utils.js" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/test-Utils.js" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/config.js" afterPath="$PROJECT_DIR$/src/config.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/idb_mgr.js" afterPath="$PROJECT_DIR$/src/idb_mgr.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/memory_mgr.js" afterPath="$PROJECT_DIR$/src/memory_mgr.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/offstores.js" afterPath="$PROJECT_DIR$/src/offstores.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/transactions.js" afterPath="$PROJECT_DIR$/src/transactions.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils.js" afterPath="$PROJECT_DIR$/src/utils.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/websql_mgr.js" afterPath="$PROJECT_DIR$/src/websql_mgr.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/manager.html" afterPath="$PROJECT_DIR$/tests/manager.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/store.html" afterPath="$PROJECT_DIR$/tests/store.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test-manager.js" afterPath="$PROJECT_DIR$/tests/test-manager.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test-store.js" afterPath="$PROJECT_DIR$/tests/test-store.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/utils.html" afterPath="$PROJECT_DIR$/tests/utils.html" />
+    <list default="true" id="ed136e73-c167-42ba-ac66-fcf4164ea4d9" name="Default" comment="grunt file adds YYYYMMDD date to distribution files">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dist/offstores.20121016.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dist/offstores.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dist/offstores.min.20121016.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/grunt.js" afterPath="$PROJECT_DIR$/grunt.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/readme.md" afterPath="$PROJECT_DIR$/readme.md" />
     </list>
     <ignored path="offstores.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -90,7 +68,16 @@
       <file leaf-file-name="transactions.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/transactions.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="0" selection-start="597" selection-end="597" vertical-scroll-proportion="0.0">
+            <state line="140" column="0" selection-start="5465" selection-end="5465" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="offstores.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/offstores.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="37" column="0" selection-start="1279" selection-end="1279" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -99,7 +86,7 @@
       <file leaf-file-name="utils.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/utils.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="313" column="22" selection-start="10845" selection-end="10845" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -123,10 +110,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="grunt.js" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="grunt.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/grunt.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="40" selection-start="1235" selection-end="1235" vertical-scroll-proportion="0.0">
+            <state line="15" column="55" selection-start="663" selection-end="663" vertical-scroll-proportion="0.39964476">
               <folding />
             </state>
           </provider>
@@ -135,16 +122,16 @@
       <file leaf-file-name="readme.md" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/readme.md">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="30" column="4" selection-start="1072" selection-end="1072" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="localstorage_mgr.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="localstorage_mgr.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/localstorage_mgr.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="79" selection-start="592" selection-end="592" vertical-scroll-proportion="0.3463588">
+            <state line="17" column="108" selection-start="646" selection-end="646" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -154,15 +141,6 @@
         <entry file="file://$PROJECT_DIR$/tests/store.html">
           <provider selected="true" editor-type-id="text-editor">
             <state line="6" column="4" selection-start="246" selection-end="246" vertical-scroll-proportion="-3.75">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test-store.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tests/test-store.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="49" column="47" selection-start="1550" selection-end="1550" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -204,8 +182,8 @@
         <option value="$PROJECT_DIR$/tests/test-store.js" />
         <option value="$PROJECT_DIR$/tests/test-utils.js" />
         <option value="$PROJECT_DIR$/tests/utils.html" />
-        <option value="$PROJECT_DIR$/grunt.js" />
         <option value="$PROJECT_DIR$/readme.md" />
+        <option value="$PROJECT_DIR$/grunt.js" />
       </list>
     </option>
   </component>
@@ -230,7 +208,7 @@
     <option name="STATE" value="0" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="Scope" currentSubView="All" proportions="" version="1" splitterProportion="0.5">
+    <navigator currentView="Scope" currentSubView="Project Files" proportions="" version="1" splitterProportion="0.5">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -244,9 +222,28 @@
     <panes>
       <pane id="Scope">
         <subPane subId="Problems" />
+        <subPane subId="Tests" />
         <subPane subId="Project Files">
           <PATH>
             <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="offstores">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="offstores">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="src">
               <option name="myItemId" value="" />
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
@@ -479,7 +476,11 @@
       <created>1349935175807</created>
       <updated>1349935175807</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="initial commit">
+      <created>1350385984475</created>
+      <updated>1350385984475</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -584,13 +585,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/offstores.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="0" selection-start="597" selection-end="597" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/storemgr.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="15" column="0" selection-start="597" selection-end="597" vertical-scroll-proportion="0.0">
@@ -612,48 +606,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/websql_mgr.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="0" selection-start="597" selection-end="597" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/utils.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/transactions.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="0" selection-start="597" selection-end="597" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test-utils.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="198" column="0" selection-start="5430" selection-end="5430" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/license.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="71" selection-start="17" selection-end="74" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/grunt.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="40" selection-start="1235" selection-end="1235" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests/test-store.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="49" column="47" selection-start="1550" selection-end="1550" vertical-scroll-proportion="0.0">
@@ -668,16 +620,65 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/readme.md">
+    <entry file="file://$PROJECT_DIR$/src/localstorage_mgr.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+        <state line="17" column="108" selection-start="646" selection-end="646" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/localstorage_mgr.js">
+    <entry file="file://$PROJECT_DIR$/tests/test-utils.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="79" selection-start="592" selection-end="592" vertical-scroll-proportion="0.3463588">
+        <state line="198" column="0" selection-start="5430" selection-end="5430" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/transactions.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="140" column="0" selection-start="5465" selection-end="5465" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/offstores.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="0" selection-start="1279" selection-end="1279" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="313" column="22" selection-start="10845" selection-end="10845" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/websql_mgr.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="0" selection-start="597" selection-end="597" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="30" column="4" selection-start="1072" selection-end="1072" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/license.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="71" selection-start="17" selection-end="74" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/grunt.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="55" selection-start="663" selection-end="663" vertical-scroll-proportion="0.39964476">
           <folding />
         </state>
       </provider>

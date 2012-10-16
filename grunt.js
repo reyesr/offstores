@@ -8,6 +8,13 @@ module.exports = function(grunt) {
     files.sort(function(a,b){ return (/src\/offstores.js$/.test(a.toString()))?-1:1; });
     console.log("FILES: " + files);
 
+    function calcBuildDate(){
+        function pad(n){return n<10 ? '0'+n : n;}
+        var d = new Date();
+        console.log(d + " : " + d.getUTCFullYear() + " / " + d.getUTCMonth());
+        return d.getUTCFullYear().toString() + pad(d.getUTCMonth()+1).toString() + pad(d.getUTCDate()).toString();
+    }
+
     // Project configuration.
     grunt.initConfig({
 
@@ -17,7 +24,7 @@ module.exports = function(grunt) {
         concat: {
             dist: {
                 src: files,
-                dest: 'dist/offstores.js'
+                dest: 'dist/offstores.'+calcBuildDate()+'.js'
             }
         },
 
@@ -35,15 +42,10 @@ module.exports = function(grunt) {
          min: {
               dist: {
                 src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
-                dest: 'dist/offstores.min.js'
+                dest: 'dist/offstores.min.'+ calcBuildDate() +'.js'
               }
             }
     });
-
-
-
-    // Load tasks from "grunt-sample" grunt plugin installed via Npm.
-    grunt.loadNpmTasks('grunt-sample');
 
     // Default task.
     grunt.registerTask('default', 'lint concat min');
