@@ -14,3 +14,22 @@ Features:
 - High-level API to easily access a store
 - Low-level API to manage transactions at the application level
 - Extensively unit-tested
+
+##License
+
+Offstores is released under the terms of the Apache License, version 2.0, january 2004
+
+##Source
+You can find the source code at the following address: https://github.com/reyesr/offstores
+
+##Using offstores
+
+Include the offstores minified js file in your web page, then create and offstores.Manager instance and open it.
+
+##Customize the backend lookup
+
+When
+
+## High-level API
+
+T
