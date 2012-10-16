@@ -1,129 +1,43 @@
-var offstores = offstores||{};
-var offstores = (function(offstores, stores) {
+/*
+ * Copyright 2012 Rodrigo Reyes
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+(function(offstores, stores) {
+    'use strict';
 
-    offstores.stores=stores;
-
-    function MemoryStore(transaction, name) {
-        this.transaction = transaction;
-        this.name = name;
-    }
-
-    MemoryStore.prototype = {
-        clear: function(callback) {
-            this.transaction.clear();
-            callback(false);
-        },
-        put:function(key,value,callback) {
-            this.transaction.put(key,value);
-            callback(false);
-        },
-        remove:function(key,callback) {
-            this.transaction.remove(key);
-            callback(false);
-        },
-        get: function(key, callback) {
-            callback(false, this.transaction.get(key));
-        }
-    };
-
-    var ReadOnlyErrorFunction = function(callback){
-        callback(true, "Transaction is read-only");
-    }
-
-    function MemoryTransactionProxy(tx) {
-        this.tx = tx;
-    }
-
-    MemoryTransactionProxy.prototype = {
-        mkStoreProxy: function(name) {
-            var self = this;
-            return {
-                get: function(key) {
-                    if (self.tx.cacheLocal[name][key] != undefined) {
-                        return self.tx.cacheLocal[name][key];
-                    } else if (self.tx.removed[name][key]) {
-                        return undefined;
-                    } else if (self.tx.clearRequested[name]) {
-                        return undefined;
-                    } else {
-                        return self.tx.manager.stores[name][key];
-                    }
-                },
-                put: function(key,value) {
-                    if (self.tx.removed[name][key]) {
-                        delete self.tx.removed[name][key];
-                    }
-                    self.tx.cacheLocal[name][key] = value;
-                },
-                clear: function() {
-                    self.tx.removed[name] = {};
-                    self.tx.cacheLocal[name] = {};
-                    self.tx.clearRequested[name] = true;
-                },
-                remove: function(key) {
-                    self.tx.removed[name][key] = true;
-                }
-            }
-        }
-    };
-
-
-    function MemoryTransaction(manager, stores, readOnly) {
+    function MemoryTransactionDelegate(manager) {
         this.manager = manager;
-        this.stores = stores;
-        this.readOnly = readOnly;
-        this.onComplete = new offstores.CallbackManager();
-        this.onError = new offstores.CallbackManager();
-
-        this.proxy = new MemoryTransactionProxy(this);
-        this.cacheLocal = {};
-        this.removed = {};
-        this.clearRequested = {};
-
-        offstores.forEach(stores, function(i,name){
-            this.cacheLocal[name] = {};
-            this.removed[name] = {};
-            this.clearRequested[name] = false;
-        }, this);
     }
-
-    MemoryTransaction.prototype = {
-        store: function(name, callback) {
-            // var store = new MemoryStore(this, name, this.manager.stores[name]);
-            var store = this.proxy.mkStoreProxy(name);
-            store = new MemoryStore(this.proxy.mkStoreProxy(name), name);
-            if (this.readOnly){
-                store.put = store.clear = store.remove = ReadOnlyErrorFunction;
-            }
-            callback(false, store);
+    MemoryTransactionDelegate.prototype = {
+        get: function(storeName, key) {
+            return this.manager.stores[storeName][key];
         },
-        commit:  function() {
-            if (this.manager.stores !== undefined) {
-                // First clear what needs to be cleared
-                offstores.forEach(this.clearRequested, function(storeName) {
-                    this.manager.stores[storeName] = {};
-                }, this);
-
-                // then apply the removed
-                offstores.forEach(this.removed, function(storeName) {
-                    offstores.forEach(this.removed[storeName], function(key) {
-                        delete this.manager.stores[storeName][key];
-                    }, this);
-                }, this);
-
-                // then puts
-                offstores.forEach(this.removed, function(storeName) {
-                    offstores.forEach(this.cacheLocal[storeName], function(key, value) {
-                        this.manager.stores[storeName][key] = value;
-                    }, this);
-                }, this);
-            }
+        put: function(storeName, key,value){
+            this.manager.stores[storeName][key] = value;
+        },
+        remove: function(storeName, key) {
+            delete this.manager.stores[storeName][key];
+        },
+        clear: function(storeName) {
+            this.manager.stores[storeName] = {};
         }
     };
 
-    offstores.stores.MemoryManager = function(config) {
-        if (!(this instanceof offstores.stores.MemoryManager)) {
-            return new offstores.stores.MemoryManager(config);
+
+    stores.MemoryManager = function(config) {
+        if (!(this instanceof stores.MemoryManager)) {
+            return new stores.MemoryManager(config);
         }
 
         if (!config) {
@@ -131,33 +45,27 @@ var offstores = (function(offstores, stores) {
         }
         this.config = config;
         this.stores = {};
-    };
-
-    offstores.stores.MemoryManager.prototype.isAvailable = function(size) {
-        return true;
+        this.transactionManager = new offstores.TransactionManager();
     };
 
     /**
      * Creates the missing stores in the database
      * @private
      */
-    function createStoresmgr() {
-        offstores.forEach(this.config.stores, function(i,storeName){
-            this.stores[storeName] = {};
-        }, this);
+    function createStoresmgr(self) {
+        offstores.forEach(self.config.stores, function(i,storeName){
+            self.stores[storeName] = {};
+        });
         return true;
     }
 
-    offstores.stores.MemoryManager.prototype = {
+    stores.MemoryManager.prototype = {
         open: function(callback) {
-            createStoresmgr.call(this);
+            createStoresmgr(this);
             callback(false, this);
         },
         transaction: function(stores, readOnly, callback) {
-            var mt;
-            callback(false, mt=new MemoryTransaction(this, stores, readOnly));
-            mt.commit();
-
+            this.transactionManager.transaction(stores, readOnly, callback, new MemoryTransactionDelegate(this));
         },
         close: function(callback) {
             delete this.stores;
@@ -165,9 +73,11 @@ var offstores = (function(offstores, stores) {
         },
         deleteDatabase: function(callback){
             this.close(callback);
-        }
-    }
+        },
+        isAvailable: function(size) {
+            return true;
+        },
+        getName: function(){ return "MemoryManager";}
+    };
 
-
-    return offstores;
-})(offstores,offstores.stores||{});
+})(offstores,offstores.stores);

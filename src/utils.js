@@ -1,7 +1,22 @@
-var offstores = (function(offstores) {
+/*
+ * Copyright 2012 Rodrigo Reyes
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+(function(offstores,console) {
     "use strict";
 
-    function noop(){};
+    function noop(){}
 
     offstores.bind = function() {
         var args = Array.prototype.slice.call(arguments, 2);
@@ -10,12 +25,8 @@ var offstores = (function(offstores) {
         if (t !== undefined && func !== undefined) {
             return function() {
                 var newargs = arguments.length?args.concat(Array.prototype.slice.call(arguments)):args;
-                try {
-                    func.apply(t, newargs);
-                } catch (e) {
-                    offstores.log("offstores.bind: error ", e);
-                }
-            }
+                func.apply(t, newargs);
+            };
         } else {
             return noop;
         }
@@ -31,7 +42,7 @@ var offstores = (function(offstores) {
                 } catch (e) {
                     offstores.log("offstores.bind: error ", e);
                 }
-            }
+            };
         } else {
             return noop;
         }
@@ -65,7 +76,7 @@ var offstores = (function(offstores) {
         var self = this;
         return function() {
             self.emit.apply(Array.prototype.slice(arguments));
-        }
+        };
     };
 
     offstores.execAsync = function(func){
@@ -79,7 +90,7 @@ var offstores = (function(offstores) {
     };
 
     offstores.meta_chain_ = function(useAsync) {
-        var recall = useAsync?offstores.execAsync:function(a){a()};
+        var recall = useAsync?offstores.execAsync:function(a){a();};
         return function(){
             var functions = Array.prototype.slice.call(arguments);
             var self = this;
@@ -87,17 +98,19 @@ var offstores = (function(offstores) {
                 if (functions.length) {
                     var func = functions.shift();
                     var curArgs = Array.prototype.slice.call(arguments);
-                    functions.length>0 && curArgs.push(function(err){
-                        var ra = Array.prototype.slice.call(arguments);
-                        if (err) {
-                            var lastFunc = functions.length?functions.pop():noop;
-                            return lastFunc.apply(self, ra);
-                        } else {
-                            recall(function(){
-                                exec.apply(self, ra);
-                            })
-                        }
-                    });
+                    if (functions.length>0) {
+                        curArgs.push(function(err){
+                            var ra = Array.prototype.slice.call(arguments);
+                            if (err) {
+                                var lastFunc = functions.length?functions.pop():noop;
+                                return lastFunc.apply(self, ra);
+                            } else {
+                                recall(function(){
+                                    exec.apply(self, ra);
+                                });
+                            }
+                        });
+                    }
                     func.apply(self, curArgs);
                 }
             }
@@ -108,21 +121,22 @@ var offstores = (function(offstores) {
     offstores.chainAsync = offstores.meta_chain_(true);
     offstores.chain = offstores.meta_chain_(false);
 
-    offstores.link = function() {
+    offstores.link = function () {
         if (!(this instanceof offstores.link)) {
             var l = new offstores.link();
             return l.add.apply(l, Array.prototype.slice.call(arguments));
         }
 
-        this.functions = (arguments.length>0)?Array.prototype.slice.call(arguments):[];
+        this.functions = (arguments.length > 0) ? Array.prototype.slice.call(arguments) : [];
         this.result = undefined;
         this.value = undefined;
         this.successListeners = [];
         this.failListeners = [];
         this.withThis = this;
         this.name = undefined;
+        this.cancellable = true;
         return this;
-    }
+    };
     offstores.link.prototype = {
         as: function(name){
             this.lname = name;
@@ -134,30 +148,37 @@ var offstores = (function(offstores) {
             },this, true);
             return this;
         },
+        setCancellable: function(b){
+            this.cancellable = b;
+            return this;
+        },
         run: function(){
             var self = this;
             var funcs = this.functions.concat(function(err,value) {
                 self.resolve(err,value);
             });
-            var recall = this.useAsync?offstores.execAsync:function(a){a()};
+            var recall = this.useAsync?offstores.execAsync:function(a){a();};
             function exec(){
                 if (funcs.length > 0) {
                     var func = funcs.shift();
                     var curArgs = Array.prototype.slice.call(arguments);
                     curArgs.push(function(err){
                         var ra = Array.prototype.slice.call(arguments);
-                        if (err) {
+                        if (err && self.cancellable) {
                             return self.resolve(true, arguments[1]);
                         } else {
                             recall(function(){
                                 exec.apply(self, ra);
-                            })
+                            });
                         }
                     });
                     try {
                         func.apply(self.withThis, curArgs);
                     } catch (e) {
                         self.exc = e;
+                        offstores.forEach(self.errorListeners, function(i,errl) {
+                            errl(false,self.exc);
+                        });
                     }
                 }
             }
@@ -166,6 +187,15 @@ var offstores = (function(offstores) {
         },
         async: function(b){
             this.useAsync = b===undefined?true:b;
+            return this;
+        },
+        addAsync: function(f,timeout) {
+            timeout = timeout===undefined?0:timeout;
+            this.add(function(err,callback) {
+                setTimeout(function(){
+                    f(err,callback);
+                }, timeout);
+            });
             return this;
         },
         success: function(cb) {
@@ -182,13 +212,12 @@ var offstores = (function(offstores) {
         },
         error: function(cb) {
             if (this.exc) {
-                cb(exc);
+                cb(this.exc);
             } else if (this.resolved === undefined) {
-                {
-                    this.errorListeners = this.errorListeners || [];
-                    this.errorListeners.push(cb);
-                }
+                this.errorListeners = this.errorListeners || [];
+                this.errorListeners.push(cb);
             }
+            return this;
         },
         fail: function(cb){
             if (this.resolved === undefined) {
@@ -201,9 +230,9 @@ var offstores = (function(offstores) {
         resolve: function(err, result) {
             this.resolved = !err;
             this.value = result;
-            offstores.forEach(err?this.failListeners:this.successListeners, function(i,e) {
+            offstores.forEach(err ? this.failListeners : this.successListeners, function (i, e) {
                 e.call(this.withThis, !this.resolved, this.value);
-            }, this)
+            }, this);
             return this;
         },
         useThis: function(self){
@@ -234,7 +263,7 @@ var offstores = (function(offstores) {
                 var args = Array.prototype.slice.call(arguments);
                 var cb = args.pop();
                 self.run.apply(self, args).success(cb).fail(cb);
-            }
+            };
         },
         forEach: function(arr, func) {
             offstores.forEach(arr, function(i,e){
@@ -244,25 +273,6 @@ var offstores = (function(offstores) {
         }
 
     };
-
-//    offstores.chainBind = function() {
-//        var args = Array.prototype.slice.call(arguments, 2);
-//        var t = arguments[0];
-//        var func = arguments[1];
-//        if (t !== undefined && func !== undefined) {
-//            return function() {
-//                var newargs = args.slice();
-//                arguments.length>0 && newargs.push(arguments[arguments.length-1]);
-//                try {
-//                    func.apply(t, newargs);
-//                } catch (e) {
-//                    offstores.log("offstores.chainBind: error ", e);
-//                }
-//            }
-//        } else {
-//            return noop;
-//        }
-//    }
 
     offstores.forEach = function(object, callback, self, enableDuckTyping) {
         self = self||this;
@@ -276,8 +286,8 @@ var offstores = (function(offstores) {
                     }
                 }
             } else {
-                for (var i in object) {
-                    res = callback.call(self, i,object[i]);
+                for (var k in object) {
+                    res = callback.call(self, k,object[k]);
                     if (res !== undefined) {
                         return res;
                     }
@@ -288,5 +298,17 @@ var offstores = (function(offstores) {
         }
     };
 
-    return offstores;
-})(offstores||{});
+    offstores.Cache = function(initializer) {
+        this.data = {};
+        this.initializer = initializer;
+    };
+    offstores.Cache.prototype = {
+        get: function(name) {
+            if (this.data[name] === undefined) {
+                this.data[name] = this.initializer(name);
+            }
+            return this.data[name];
+        }
+    };
+
+})(offstores,console);

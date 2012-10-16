@@ -7,6 +7,17 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
         return new offstores.Config().setSize(1024*1024*5).setVersion("1.0").setDbName("mytest").setDBRef(storeRef);
     }
 
+    function checkData(store, data, offset, callback) {
+        if (offset >= data.keys.length) {
+            callback(false);
+        } else {
+            store.get(data.keys[offset], function(err,value) {
+                deepEqual(data.values[offset], value);
+                checkData(store,data,offset+1, callback);
+            });
+        }
+    }
+
     function BEFORE(config, callback) {
         var storemgr = new offstores.Manager(config);
         storemgr.open(callback);
@@ -104,9 +115,41 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
         });
 
 
+//    createSingleTest("put bulk string",
+//        defaultConfig().addStore("test"),
+//        function(manager,callback) {
+//            var data = offstores.tests.mkRandomStringDataSet(500, 16, 32);
+//            manager.putBulk("test", data.keys, data.values, function(err) {
+//                offstores.execAsync(function(){
+//                    manager.txStore("test", function(err,store){
+//                        checkData(store, data, 0, function(err){
+//                           callback(err);
+//                        });
+//                    });
+//
+//                });
+//            });
+//        });
+//
+//    createSingleTest("put bulk complex object",
+//        defaultConfig().addStore("test"),
+//        function(manager,callback) {
+//            var data = offstores.tests.mkRandomObjectDataSet(4, 16, 32);
+//            manager.putBulk("test", data.keys, data.values, function(err) {
+//                offstores.execAsync(function(){
+//                    manager.txStore("test", function(err,store){
+//                        checkData(store, data, 0, function(err){
+//                           callback(err);
+//                        });
+//                    });
+//
+//                });
+//            });
+//        });
 
 }
 
-//createTestSuite(offstores.stores.IDBManager, "IndexedDB",  5*1024*1024);
+createTestSuite(offstores.stores.IDBManager, "IndexedDB",  5*1024*1024);
 createTestSuite(offstores.stores.WebSQLManager, "WebSQL",  5*1024*1024);
-//createTestSuite(offstores.stores.MemoryManager, "Memory",  5*1024*1024);
+createTestSuite(offstores.stores.MemoryManager, "Memory",  5*1024*1024);
+createTestSuite(offstores.stores.LocalStorageManager, "LocalStorage",  5*1024*1024);

@@ -1,19 +1,37 @@
-var offstores = (function(offstores) {
+/*
+ * Copyright 2012 Rodrigo Reyes
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+var offstores = (function (offstores) {
+    'use strict';
+    offstores.stores = {};
+
 
     function findSuitableStore(managers, size) {
-        return offstores.forEach(managers, function(i,manager) {
+        return offstores.forEach(managers, function (i, manager) {
             try {
-                if (manager.prototype.isAvailable(size)){
+                if (manager.prototype.isAvailable(size)) {
                     return manager;
                 }
-            } catch (exc){
+            } catch (exc) {
                 offstores.log(manager, exc);
             }
         });
     }
 
-    offstores.Manager = function(config){
-        this.managers = (config.managers&&config.managers.length>0)?config.managers:[offstores.IDBManager];
+    offstores.Manager = function (config) {
+        this.managers = (config.managers && config.managers.length > 0) ? config.managers : [offstores.IDBManager];
         this.config = config;
         this.metaStoreName = "offstoremeta";
     };
@@ -22,99 +40,75 @@ var offstores = (function(offstores) {
         this.metaStoreName = "offstoresmeta";
     }
 
-    function doInitialization(err, name, callback) {
-        offstores.privCheck.call(this, offstores.Manager, "Invalid bound", "function checkInit not bound");
-        var init = this.config.initializers[name];
-        offstores.log("DoInitialization: " + name);
-        if (init && typeof init === "function") {
-            init(this, name, callback);
-        } else {
-            callback(false)
-        }
+    function ManagerPrivate(manager) {
+        return manager;
     }
 
-    function checkInit(err, storeNames, callback) {
-        offstores.privCheck.call(this, offstores.Manager, "Invalid bound", "function checkInit not bound");
+    //
+    // metaInit is:
+    // For each store:
+    //  - get from the metatable, the init object
+    //  -if init.init = false: call the initializer, and if successful, sets the init object to true
+    // - otherwise, ignore and continue
+    //
+    function metaInit(manager, storeNames, callback) {
 
-        var self = this;
-        if (storeNames.length === 0) {
-            return callback(false);
-        }
+        function exec(offset) {
+            if (offset >= storeNames.length) {
+                callback(false);
+            } else {
+                var name = storeNames[offset];
+                manager.txStore(manager.metaStoreName, true, function(err, store){
+                    store.get(name, function(err, value) {
+                        if (value === undefined) {
+                            value = {init:false};
+                        }
 
-        var name = storeNames.pop();
-        this.manager.transaction([self.metaStoreName], false, function(err,tx){
-            tx.store(self.metaStoreName, function(err, store){
-                store.get(name, function(err,value) {
-                    if (err) {
-                        callback(err,value);
-                    } else {
-                        value = value || {init:false};
-                        if (name !== self.metaStoreName && (value.init == false || self.config.forceInit[name])) {
+                        if (value.init === false && manager.config.initializers[name]!==undefined) {
 
-                            offstores.link()
-                                .useThis(self)
-                                .async(true)
-                                .add(function(err, callback) {
-                                    this.txStore(this.metaStoreName, false, function(err,store) {
+                            manager.config.initializers[name](manager, name, function(err){
+                                value.init = !err;
+                                manager.txStore(manager.metaStoreName, false, function(err,store){
+                                    store.put(name, value, function(err){
                                         if (err) {
-                                            callback(err,store);
+                                            callback(err);
                                         } else {
-                                            store.clear(function() {
-                                                callback(err, name);
+                                            offstores.execAsync(function(){
+                                                exec(offset+1);
                                             });
                                         }
                                     });
-                                })
-                                .bind(self,  doInitialization)
-                                .add(function _set_init_true(err,callback) {
-                                    self.txStore(self.metaStoreName, false, function(err,store){
-                                        if (err) {
-                                            callback(true, store);
-                                        } else {
-                                            value.init = true;
-                                            store.put(name, value, function(err,v){
-                                                callback(err)
-                                            });
-
-                                        }
-                                    });
-                                })
-                                .success(function(err) {
-                                    checkInit.call(self, false, storeNames, callback);
-                                })
-                                .fail(function(err,exc) {
-                                    callback(err,exc);
-                                })
-                                .run();
-
+                                });
+                            });
 
                         } else {
-                            checkInit.call(self, false, storeNames, callback);
+                            exec(offset+1);
                         }
-                    }
-
+                    });
                 });
-            });
-        });
+            }
+        }
+        exec(0);
     }
 
-    offstores.Manager.prototype.open = function(callback) {
+
+    offstores.Manager.prototype.open = function (callback) {
         var self = this;
         var e;
         try {
-            var candidate = findSuitableStore(this.managers, this.config.dbSize);
-
             this.config.addStore(this.metaStoreName);
-            var mgr = new candidate(this.config);
 
-            mgr.open(function(err, mgr) {
+            var Candidate = findSuitableStore(this.managers, this.config.dbSize);
+            var mgr = new Candidate(this.config);
+
+            mgr.open(function (err, mgr) {
                 self.manager = mgr;
                 // Check initialization
                 if (err) {
-                    return callbak.apply(Array.prototype.slice(arguments));
+                    return callback.apply(Array.prototype.slice(arguments));
                 } else {
-                    checkInit.call(self, false, self.config.stores.slice(), function(err,v){
-                        callback(err,self);
+                    metaInit(self, self.config.stores, function(err) {
+                        callback(err, self);
                     });
                 }
             });
@@ -123,41 +117,81 @@ var offstores = (function(offstores) {
             callback(true, e);
             throw e;
         }
-    }
+    };
 
-    offstores.Manager.prototype.close = function(callback) {
+    offstores.Manager.prototype.close = function (callback) {
         this.manager.close(callback);
     };
 
-    offstores.Manager.prototype.deleteDatabase = function(callback) {
+    offstores.Manager.prototype.deleteDatabase = function (callback) {
         this.manager.deleteDatabase(callback);
     };
 
 
-    offstores.Manager.prototype.txStore = function(name, readOnly, callback) {
+    offstores.Manager.prototype.txStore = function (name, readOnly, callback) {
         if (callback === undefined && (typeof readOnly === "function")) {
             callback = readOnly;
             readOnly = undefined;
         }
-        readOnly = readOnly===undefined?false:readOnly;
+        readOnly = readOnly === undefined ? false : readOnly;
         try {
-            this.manager.transaction([name], readOnly, function(err,tx){
-                tx.store(name, function(err,store){
+            this.manager.transaction([name], readOnly, function (err, tx) {
+                tx.store(name, function (err, store) {
                     callback(false, store);
                 });
             });
         } catch (e) {
             callback(true, e);
         }
-    }
+    };
 
-    offstores.Manager.prototype.clearStore = function(name, callback) {
-        this.txStore(name, function(err, store){
-           store.clear(function(err){
-               callback(err);
-           });
+    offstores.Manager.prototype.clearStore = function (name, callback) {
+        this.txStore(name, function (err, store) {
+            store.clear(function (err) {
+                callback(err);
+            });
         });
-    }
+    };
+
+//    offstores.Manager.prototype.putBulk = function(storeName, keys, values, callback, batchSize) {
+//        batchSize = batchSize||100;
+//
+//        function putBulk(manager, store, offset, callback) {
+//
+//            function singlePut(store, key, value) {
+//                store.put(key, value, function(err){
+//                    if (err) {
+//                        callback(err);
+//                    } else {
+//                        putBulk(manager, store, offset+1, callback);
+//                    }
+//                });
+//            }
+//
+//            if (offset >= keys.length) {
+//                offstores.execAsync(function(){callback(false);});
+//            } else {
+//                if (store === undefined) {
+//                    manager.txStore(storeName, function(err, store){
+//                        if (err) {
+//                            callback(err);
+//                        } else {
+//                            singlePut(store, keys[offset], values[offset]);
+//                        }
+//                    });
+//                } else if (offset%batchSize==0) {
+//                    offstores.execAsync(function() { putBulk(manager, undefined, offset, callback);});
+//                } else {
+//                    singlePut(store, keys[offset], values[offset]);
+//                }
+//            }
+//        }
+//        putBulk(this, undefined, 0, callback);
+//    }
+
+    offstores.Manager.prototype.getStoreManager = function(storeName) {
+        return new offstores.StoreManager(this, storeName);
+    };
 
     return offstores;
-})(offstores||{});
+})(offstores || {});

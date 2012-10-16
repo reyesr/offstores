@@ -1,10 +1,3 @@
-offstores.mkRandomString = function(size) {
-    var result = "";
-    for (var i=0;i<size; ++i) {
-        result += String.fromCharCode(65+parseInt(Math.random()*26));
-    }
-    return result;
-}
 
 function createTestSuite(storeRef, storeName, maxDbSize) {
 
@@ -12,6 +5,12 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
 
     function defaultConfig() {
         return new offstores.Config().setSize(1024*1024*5).setVersion("1.0").setDbName("mytest").setDBRef(storeRef);
+    }
+
+    function txStore(dbmgr, storeName, callback) {
+        dbmgr.transaction(storeName, false, function(err,tx) {
+            tx.store(storeName, callback);
+        });
     }
 
     function insertData(store, data, offset, callback) {
@@ -29,7 +28,8 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
     }
 
     function readData(store, data, offset, callback, checkFunc) {
-        checkFunc = checkFunc || deepEqual;        if (offset < data.length) {
+        checkFunc = checkFunc || deepEqual;
+        if (offset < data.length) {
             store.get(data[offset].key, function(err,res){
                 if (err) {
                     callback(true);
@@ -46,11 +46,41 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
     function mkData(count) {
         var data = [];
         for (var i=0; i<count; ++i) {
-            var key = offstores.mkRandomString(12);
-            var value = {key1: offstores.mkRandomString(12), key2: Math.random()*9999999};
+            var key = offstores.tests.mkRandomString(12);
+            var value = {key1: offstores.tests.mkRandomString(12), key2: Math.random()*9999999};
             data.push({key:key, value:value});
         }
         return data;
+    }
+
+    function mkClear(dbmgr) {
+        return function step0clear(err, callback) {
+            txStore(dbmgr, "test", function(err, store) {
+                store.clear(function(err){
+                    callback(false);
+                });
+            });
+        }
+    }
+    function mkPut(dbmgr, key, value) {
+        return function step1put(err, callback) {
+            txStore(dbmgr, "test", function(err, store) {
+                store.put(key, value, function(err){
+                    callback(false);
+                });
+            });
+        }
+    }
+
+    function mkExpectValue(dbmgr, key, expectedValue) {
+        return function step2expect(err, callback) {
+            txStore(dbmgr, "test", function(err, store) {
+                store.get(key, function(err, value){
+                    equal(value, expectedValue);
+                    callback(false);
+                });
+            });
+        }
     }
 
     function BEFORE(config, callback) {
@@ -219,8 +249,46 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
             });
         });
 
-}
+    test("put value and rollback", function() {
 
-createTestSuite(offstores.stores.IDBManager, "IndexedDB",  5*1024*1024);
-createTestSuite(offstores.stores.WebSQLManager, "WebSQL",  5*1024*1024);
-createTestSuite(offstores.stores.MemoryManager, "Memory",  5*1024*1024);
+        QUnit.stop();
+
+        var dbmgr = new storeRef(defaultConfig().addStore("test"));
+
+        offstores.link()
+            .add(function(err, callback) {
+                dbmgr.open(function(err){
+                    callback(err);
+                });
+             })
+            .add(mkClear(dbmgr))
+            .add(mkPut(dbmgr, "my key 1", "my value 1"))
+            .addAsync(function(err,callback){
+                mkPut(dbmgr, "my key 2", "my value 2")(err,function(){
+                    throw "EXPECTED TEST EXCEPTION";
+                });
+            })
+            .run();
+
+        offstores.link()
+            .addAsync(mkExpectValue(dbmgr, "my key 1", "my value 1"), 500)
+            .addAsync(mkExpectValue(dbmgr, "my key 2", undefined))
+            .run()
+            .success(function(){
+                ok(true);
+                QUnit.start();
+            })
+            .fail(function(){
+                ok(false);
+                QUnit.start();
+            });
+
+    });
+}
+var TOTO = offstores.stores;
+offstores.forEach([offstores.stores.LocalStorageManager, offstores.stores.IDBManager, offstores.stores.WebSQLManager, offstores.stores.MemoryManager], function(i,mgr){
+    var size = 5*1024*1024;
+    if (mgr.prototype.isAvailable(size)) {
+        createTestSuite(mgr, mgr.prototype.getName(),  size);
+    }
+});
