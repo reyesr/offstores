@@ -83,23 +83,41 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
         }
     }
 
+    var globalName = "unset";
+    var ongoingJob = false;
+
     function BEFORE(config, callback) {
+        console.log(">>> STARTING " + globalName);
         var store = new storeRef(config);
         store.open(callback);
     }
 
     function AFTER(config, store, callback) {
+        var lName = globalName;
         store.close(function() {
+
+            //
+            // IDB close method being async and without any mean to synchronize,
+            // we have to delete the database after waiting a moment, to let the transaction complete
+            // and the database closing. On chrome 23, no doing this results in the function
+            // being called several times
+            //
             setTimeout(function() {
                 store.deleteDatabase(function(err) {
-                    console.log("Deleted!");
+                    console.log("Deleted database !");
+                    ongoingJob = false;
+                    console.log("<<< ENDED " + lName);
                     callback(err);
                 });
-            },0);
+            },200);
         });
     }
 
     function createSingleTest(name, config, func) {
+        if (ongoingJob !== false) {
+            console.log("********************> ERROR, " + globalName +  " not finished");
+        }
+        globalName = name;
         test(name, function() {
             QUnit.stop();
             BEFORE(config, function(err,store) {
@@ -132,10 +150,14 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
         defaultConfig().addStore("test"),
         function(store,callback) {
             store.transaction("test", false, function(err,tx) {
+                console.log("TRANSACTION OK");
                 tx.store("test", function(err,store){
+                    console.log("STORE OK");
                     var basevalue = new Date().getMilliseconds();
                     store.put("mykey", "my value:" + basevalue, function(err) {
+                        console.log("PUT OK");
                         store.get("mykey", function(err,value) {
+                            console.log("GET OK");
                             var expected = "my value:" + basevalue;
                             ok(value === expected);
                             callback();
@@ -157,6 +179,7 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
                     insertData(store, data, 0, function(err){
                         if (err){
                             ok(false, "Couldn't insert all values");
+                            callback();
                         } else {
                             readData(store, data, 0, function(err){
                                 if (err) {
@@ -285,8 +308,7 @@ function createTestSuite(storeRef, storeName, maxDbSize) {
 
     });
 }
-var TOTO = offstores.stores;
-offstores.forEach([offstores.stores.LocalStorageManager, offstores.stores.IDBManager, offstores.stores.WebSQLManager, offstores.stores.MemoryManager], function(i,mgr){
+    offstores.forEach([offstores.stores.LocalStorageManager, offstores.stores.WebSQLManager, offstores.stores.MemoryManager], function(i,mgr){
     var size = 5*1024*1024;
     if (mgr.prototype.isAvailable(size)) {
         createTestSuite(mgr, mgr.prototype.getName(),  size);
